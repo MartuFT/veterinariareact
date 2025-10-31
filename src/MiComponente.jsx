@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import './MiComponente.css';
+import logo from './imagenes/logo.png';
 
 function MiComponente() {
   const [selectedPetSize, setSelectedPetSize] = useState(null);
   const [file, setFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [step, setStep] = useState(1); // 1: pantalla inicial, 2: análisis
 
   const handlePetSizeSelect = (size) => {
     setSelectedPetSize(size);
@@ -39,6 +41,14 @@ function MiComponente() {
     }, 200);
   };
 
+  const handleNext = () => {
+    if (!selectedPetSize) {
+      alert('Por favor selecciona el tamaño del paciente');
+      return;
+    }
+    setStep(2);
+  };
+
   const handleDownload = () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -57,79 +67,90 @@ function MiComponente() {
     <div className="veterinaria-app">
       {/* Header */}
       <header className="header">
-        <div className="logo-container">
-          <div className="logo-placeholder">V</div>
-          <span className="logo-text">VETERINAR<span className="logo-ia">IA</span></span>
-        </div>
-        <div className="tagline">
-          ¡Facilita la interpretación de ecografías!
+        <div className="header-inner">
+          <div className="logo-container">
+            <img
+              className="logo"
+              src={logo}
+              alt="Logo VeterinarIA"
+            />
+            <span className="logo-text">VETERINAR<span className="logo-ia">IA</span></span>
+          </div>
+          <div className="tagline">
+            ¡Facilita la interpretación de ecografías!
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="main-content">
-        <h1 className="main-instruction">
-          Clickea la opción que más se asemeje al paciente.
-        </h1>
+        {step === 1 && (
+          <>
+            <h1 className="main-instruction">
+              Clickea la opción que más se asemeje al paciente.
+            </h1>
+            <div className="pet-size-selection">
+              <button 
+                className={`pet-size-btn ${selectedPetSize === 'small' ? 'selected' : ''}`}
+                onClick={() => handlePetSizeSelect('small')}
+              >
+                Perro pequeño/gato
+              </button>
+              <button 
+                className={`pet-size-btn ${selectedPetSize === 'medium' ? 'selected' : ''}`}
+                onClick={() => handlePetSizeSelect('medium')}
+              >
+                Perro mediano
+              </button>
+              <button 
+                className={`pet-size-btn ${selectedPetSize === 'large' ? 'selected' : ''}`}
+                onClick={() => handlePetSizeSelect('large')}
+              >
+                Perro grande
+              </button>
+            </div>
+            <div className="actions">
+              <button className="next-btn" onClick={handleNext}>Avanzar</button>
+            </div>
+          </>
+        )}
 
-        {/* Pet Size Selection */}
-        <div className="pet-size-selection">
-          <button 
-            className={`pet-size-btn ${selectedPetSize === 'small' ? 'selected' : ''}`}
-            onClick={() => handlePetSizeSelect('small')}
-          >
-            Perro pequeño/Gato
-          </button>
-          <button 
-            className={`pet-size-btn ${selectedPetSize === 'medium' ? 'selected' : ''}`}
-            onClick={() => handlePetSizeSelect('medium')}
-          >
-            Perro mediano
-          </button>
-          <button 
-            className={`pet-size-btn ${selectedPetSize === 'large' ? 'selected' : ''}`}
-            onClick={() => handlePetSizeSelect('large')}
-          >
-            Perro grande
-          </button>
-        </div>
+        {step === 2 && (
+          <>
+            <div className="file-upload-section">
+              <input 
+                type="file" 
+                id="fileInput" 
+                accept="image/*" 
+                onChange={handleFileChange}
+                className="file-input"
+              />
+              <label htmlFor="fileInput" className="file-input-label">
+                Seleccionar imagen de ecografía
+              </label>
+              {file && <img src={file} alt="preview" className="preview" />}
+            </div>
 
-        {/* File Upload */}
-        <div className="file-upload-section">
-          <input 
-            type="file" 
-            id="fileInput" 
-            accept="image/*" 
-            onChange={handleFileChange}
-            className="file-input"
-          />
-          <label htmlFor="fileInput" className="file-input-label">
-            Seleccionar imagen de ecografía
-          </label>
-          {file && <img src={file} alt="preview" className="preview" />}
-        </div>
+            <button 
+              className="analyze-btn" 
+              onClick={handleAnalyze}
+              disabled={!selectedPetSize || !file}
+            >
+              Analizar
+            </button>
 
-        {/* Analyze Button */}
-        <button 
-          className="analyze-btn" 
-          onClick={handleAnalyze}
-          disabled={!selectedPetSize || !file}
-        >
-          Analizar
-        </button>
-
-        {/* Progress */}
-        {progress > 0 && progress < 100 && (
-          <div
-            className="circular-progress"
-            style={{ background: `conic-gradient(#4d5bf9 ${progress * 3.6}deg, #cadcff ${progress * 3.6}deg)` }}
-          >
-            <span>{progress}%</span>
-          </div>
+            {progress > 0 && progress < 100 && (
+              <div
+                className="circular-progress"
+                style={{ background: `conic-gradient(#4d5bf9 ${progress * 3.6}deg, #cadcff ${progress * 3.6}deg)` }}
+              >
+                <span>{progress}%</span>
+              </div>
+            )}
+          </>
         )}
       </main>
 
-      {/* Results */}
       {showResult && (
         <div className="resultado">
           <div className="resultado-container">
