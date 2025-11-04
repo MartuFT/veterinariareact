@@ -97,6 +97,78 @@
   margin-bottom: 30px;
 }
 
+/* Two-column upload layout */
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin: 24px 0 16px 0;
+}
+
+.upload-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-title {
+  color: #333;
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+}
+
+.dropzone {
+  width: 100%;
+  max-width: 520px;
+  height: 180px;
+  border-radius: 12px;
+  background: #f8f9fa;
+  border: 1px solid #e1e5ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.dropzone-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #4d5bf9;
+  cursor: pointer;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.dropzone-label.hidden {
+  display: none;
+}
+
+.dropzone.has-file {
+  background: #eef2ff;
+}
+
+.preview-inside {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.preview-inside.clickable-image {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.preview-inside.clickable-image:hover {
+  opacity: 0.9;
+}
+
 .file-input {
   display: none;
 }
@@ -198,8 +270,49 @@
   background: #c82333;
 }
 
+/* Progress bar (horizontal) */
+.progress-wrapper {
+  margin: 30px auto;
+  max-width: 560px;
+  padding: 0 16px;
+}
+
+.progress-track {
+  position: relative;
+  height: 18px;
+  background: #d0d8e2; /* gris claro */
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.12);
+}
+
+.progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: #ffffff; /* barra blanca avanzando */
+  border-radius: 9999px;
+  transition: width 0.2s ease;
+}
+
+.progress-label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 700;
+  color: #174b86; /* azul oscuro, legible sobre blanco */
+  font-size: 0.95rem;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
+  .upload-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
   .pet-size-selection {
     flex-direction: column;
     align-items: center;
