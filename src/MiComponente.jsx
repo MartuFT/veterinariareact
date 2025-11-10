@@ -42,7 +42,6 @@ function MiComponente() {
       setFileObjFn(selectedFile);
       setPreviewFn(URL.createObjectURL(selectedFile));
       setProgress(0);
-      setShowResult(false);
       setErrorMessage('');
     }
   };
@@ -54,7 +53,6 @@ function MiComponente() {
       setFileObjFn(droppedFile);
       setPreviewFn(URL.createObjectURL(droppedFile));
       setProgress(0);
-      setShowResult(false);
       setErrorMessage('');
     }
   };
@@ -134,18 +132,52 @@ function MiComponente() {
         });
       }, 150);
 
-      const response = await fetch('https://backend-2-chi.vercel.app/api/descargar-pdf', {
-        method: 'GET'
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `No se pudo descargar el PDF (${response.status})`);
-      }
+      // Simular espera de descarga (no hacer fetch todavía)
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       clearInterval(progressInterval);
       setDownloadProgress(100);
       
-      const blob = await response.blob();
+      // Crear un PDF simulado (placeholder)
+      // En producción, esto vendría del servidor
+      const pdfContent = '%PDF-1.4\n' +
+        '1 0 obj\n' +
+        '<< /Type /Catalog /Pages 2 0 R >>\n' +
+        'endobj\n' +
+        '2 0 obj\n' +
+        '<< /Type /Pages /Kids [3 0 R] /Count 1 >>\n' +
+        'endobj\n' +
+        '3 0 obj\n' +
+        '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\n' +
+        'endobj\n' +
+        '4 0 obj\n' +
+        '<< /Length 44 >>\n' +
+        'stream\n' +
+        'BT\n' +
+        '/F1 12 Tf\n' +
+        '100 700 Td\n' +
+        '(Resultado VeterinarIA) Tj\n' +
+        'ET\n' +
+        'endstream\n' +
+        'endobj\n' +
+        '5 0 obj\n' +
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n' +
+        'endobj\n' +
+        'xref\n' +
+        '0 6\n' +
+        '0000000000 65535 f \n' +
+        '0000000009 00000 n \n' +
+        '0000000058 00000 n \n' +
+        '0000000115 00000 n \n' +
+        '0000000294 00000 n \n' +
+        '0000000384 00000 n \n' +
+        'trailer\n' +
+        '<< /Size 6 /Root 1 0 R >>\n' +
+        'startxref\n' +
+        '478\n' +
+        '%%EOF';
+      
+      const blob = new Blob([pdfContent], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
