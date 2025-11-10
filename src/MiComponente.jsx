@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './MiComponente.css';
 import logo from './imagenes/logo.png';
 
@@ -10,12 +10,27 @@ function MiComponente() {
   const [fileTransversalPreview, setFileTransversalPreview] = useState(null);
   const [fileLongitudinalPreview, setFileLongitudinalPreview] = useState(null);
   const [progress, setProgress] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [step, setStep] = useState(1); // 1: pantalla inicial, 2: análisis
+  // step 1: selección de tamaño, step 2: carga de imágenes, step 3: pantalla de carga, step 4: resultado
+  const [step, setStep] = useState(1);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const fileTransversalRef = useRef(null);
   const fileLongitudinalRef = useRef(null);
+
+  // Deshabilitar scroll del body cuando estamos en un frame de pantalla completa
+  useEffect(() => {
+    if (step === 3 || step === 4) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    // Cleanup cuando el componente se desmonte
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [step]);
 
   const handlePetSizeSelect = (size) => {
     setSelectedPetSize(size);
@@ -55,17 +70,17 @@ function MiComponente() {
       alert('Por favor carga ambas imágenes (Transversal y Longitudinal)');
       return;
     }
-
+    
     setErrorMessage('');
     setProgress(0);
-    setShowResult(false);
     setIsUploading(true);
+    setStep(3); // Ir a pantalla de carga
 
     try {
-      let prog = 0;
+    let prog = 0;
       const progressTimer = setInterval(() => {
         prog = Math.min(prog + 8, 95);
-        setProgress(prog);
+      setProgress(prog);
       }, 200);
 
       const formData = new FormData();
@@ -82,11 +97,14 @@ function MiComponente() {
       }
       clearInterval(progressTimer);
       setProgress(100);
-      setShowResult(true);
+      // Esperar un momento antes de cambiar a la pantalla de resultado
+      setTimeout(() => {
+        setStep(4); // Ir a pantalla de resultado
+        setIsUploading(false);
+      }, 500);
     } catch (err) {
       setErrorMessage(err?.message || 'Error subiendo imágenes');
-      setShowResult(false);
-    } finally {
+      setStep(2); // Volver a la pantalla de carga de imágenes en caso de error
       setIsUploading(false);
     }
   };
@@ -101,13 +119,32 @@ function MiComponente() {
 
   const handleDownload = async () => {
     setErrorMessage('');
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    
     try {
-      const response = await fetch('https://backend-2-chi.vercel.app/api/subir-imagen', {
+      // Simular progreso de descarga
+      const progressInterval = setInterval(() => {
+        setDownloadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 150);
+
+      const response = await fetch('https://backend-2-chi.vercel.app/api/descargar-pdf', {
         method: 'GET'
       });
       if (!response.ok) {
-        throw new Error(`No se pudo descargar el PDF (${response.status})`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `No se pudo descargar el PDF (${response.status})`);
       }
+      
+      clearInterval(progressInterval);
+      setDownloadProgress(100);
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -117,11 +154,151 @@ function MiComponente() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      
+      // Volver a la pantalla de resultado después de un momento
+      setTimeout(() => {
+        setIsDownloading(false);
+        setDownloadProgress(0);
+      }, 500);
     } catch (err) {
       setErrorMessage(err?.message || 'Error descargando el PDF');
+      setIsDownloading(false);
+      setDownloadProgress(0);
     }
   };
 
+  // Pantalla de carga completa (Step 3)
+  if (step === 3) {
+    return (
+      <div className="veterinaria-app fullscreen-frame">
+        <header className="header">
+          <div className="header-inner">
+            <div className="logo-container">
+              <img
+                className="logo"
+                src={logo}
+                alt="Logo VeterinarIA"
+              />
+              <span className="logo-text">VETERINAR<span className="logo-ia">IA</span></span>
+            </div>
+            <div className="tagline">
+              ¡Facilita la interpretación de ecografías!
+            </div>
+          </div>
+        </header>
+
+        <main className="main-content fullscreen-main">
+          <h1 className="frame-title">Resultado</h1>
+          
+          <div className="loading-frame">
+            <div className="loading-content">
+              <h2 className="loading-title">Descargando</h2>
+              <p className="loading-subtitle">Esto puede tomar un rato</p>
+              
+              <div className="progress-wrapper-fullscreen">
+                <div className="progress-track">
+                  <div className="progress-fill" style={{ width: `${progress}%` }} />
+                  <div className="progress-label">{progress}%</div>
+                </div>
+              </div>
+              
+              <p className="loading-status">Subiendo</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Pantalla de descarga (cuando se está descargando el PDF)
+  if (isDownloading && step === 4) {
+    return (
+      <div className="veterinaria-app fullscreen-frame">
+        <header className="header">
+          <div className="header-inner">
+            <div className="logo-container">
+              <img
+                className="logo"
+                src={logo}
+                alt="Logo VeterinarIA"
+              />
+              <span className="logo-text">VETERINAR<span className="logo-ia">IA</span></span>
+            </div>
+            <div className="tagline">
+              ¡Facilita la interpretación de ecografías!
+            </div>
+          </div>
+        </header>
+
+        <main className="main-content fullscreen-main">
+          <h1 className="frame-title">Resultado</h1>
+          
+          <div className="loading-frame">
+            <div className="loading-content">
+              <h2 className="loading-title">Descargando</h2>
+              <p className="loading-subtitle">Esto puede tomar un rato</p>
+              
+              <div className="progress-wrapper-fullscreen">
+                <div className="progress-track">
+                  <div className="progress-fill" style={{ width: `${downloadProgress}%` }} />
+                  <div className="progress-label">{downloadProgress}%</div>
+                </div>
+              </div>
+              
+              <p className="loading-status">Descargando PDF</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Pantalla de resultado (Step 4)
+  if (step === 4) {
+    return (
+      <div className="veterinaria-app fullscreen-frame">
+        <header className="header">
+          <div className="header-inner">
+            <div className="logo-container">
+              <img
+                className="logo"
+                src={logo}
+                alt="Logo VeterinarIA"
+              />
+              <span className="logo-text">VETERINAR<span className="logo-ia">IA</span></span>
+            </div>
+            <div className="tagline">
+              ¡Facilita la interpretación de ecografías!
+            </div>
+          </div>
+        </header>
+
+        <main className="main-content fullscreen-main">
+          <h1 className="frame-title">Resultado</h1>
+          
+          <div className="result-frame">
+            <div className="result-content">
+              <button className="button-download-pdf" onClick={handleDownload}>
+                <span>descargar pdf</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 15V3M12 15L8 11M12 15L16 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 17L2 19C2 20.1046 2.89543 21 4 21L20 21C21.1046 21 22 20.1046 22 19L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {errorMessage && (
+            <div className="error-message-fullscreen">
+              <div style={{ color: '#b00020' }}>{errorMessage}</div>
+            </div>
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  // Pantallas normales (Step 1 y 2)
   return (
     <div className="veterinaria-app">
       {/* Header */}
@@ -257,37 +434,14 @@ function MiComponente() {
               Analizar
             </button>
 
-            {progress > 0 && progress < 100 && (
-          <div className="progress-wrapper">
-            <div className="progress-track">
-              <div className="progress-fill" style={{ width: `${progress}%` }} />
-              <div className="progress-label">{progress}%</div>
-            </div>
+            {errorMessage && (
+              <div className="error-message" style={{ color: '#b00020', marginTop: '20px' }}>
+                {errorMessage}
           </div>
         )}
           </>
         )}
       </main>
-
-      {errorMessage && (
-        <div className="resultado">
-          <div className="resultado-container">
-            <div style={{ color: '#b00020' }}>{errorMessage}</div>
-          </div>
-        </div>
-      )}
-      {showResult && (
-        <div className="resultado">
-          <div className="resultado-container">
-            <h2>Resultado</h2>
-            <div className="caja-ia">
-              <button className="button descargar" onClick={handleDownload}>
-                Descargar resultado en PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
