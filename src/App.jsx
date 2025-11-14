@@ -1,5 +1,5 @@
-import './App.css'
-import MiComponente from './MiComponente'
+import './App.css';
+import MiComponente from './MiComponente';
 
 function App() {
   return (
@@ -10,7 +10,8 @@ function App() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
+/*organiza la pag mejir*/

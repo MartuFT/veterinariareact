@@ -3,110 +3,40 @@ import './MiComponente.css';
 import logo from './imagenes/logo.png';
 
 function MiComponente() {
+  // Estado para selección de tamaño (solo visual, no se guarda)
   const [selectedPetSize, setSelectedPetSize] = useState(null);
-  // Keep actual File objects + previews
-  const [fileTransversalFile, setFileTransversalFile] = useState(null);
-  const [fileLongitudinalFile, setFileLongitudinalFile] = useState(null);
-  const [fileTransversalPreview, setFileTransversalPreview] = useState(null);
-  const [fileLongitudinalPreview, setFileLongitudinalPreview] = useState(null);
+  
+  // Estados para archivos y previsualizaciones
+  const [file, setFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  
+  // Estados para progreso y navegación
   const [progress, setProgress] = useState(0);
-  // step 1: selección de tamaño, step 2: carga de imágenes, step 3: pantalla de carga, step 4: resultado
-  const [step, setStep] = useState(1);
-  const [isUploading, setIsUploading] = useState(false);
+  const [step, setStep] = useState(1); // 1: selección tamaño, 2: carga, 3: procesando, 4: resultado
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [errorMessage, setErrorMessage] = useState('');
-  const fileTransversalRef = useRef(null);
-  const fileLongitudinalRef = useRef(null);
+  
+  // Referencia para input de archivo
+  const fileRef = useRef(null);
 
-  // Deshabilitar scroll del body cuando estamos en un frame de pantalla completa
+  // Deshabilitar scroll en pantallas de pantalla completa
   useEffect(() => {
     if (step === 3 || step === 4) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    // Cleanup cuando el componente se desmonte
     return () => {
       document.body.style.overflow = '';
     };
   }, [step]);
 
+  // Seleccionar tamaño de mascota (solo visual, no se guarda)
   const handlePetSizeSelect = (size) => {
     setSelectedPetSize(size);
   };
 
-  const handleFileChange = (e, setFileObjFn, setPreviewFn) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFileObjFn(selectedFile);
-      setPreviewFn(URL.createObjectURL(selectedFile));
-      setProgress(0);
-      setErrorMessage('');
-    }
-  };
-
-  const handleDrop = (event, setFileObjFn, setPreviewFn) => {
-    event.preventDefault();
-    const droppedFile = event.dataTransfer.files && event.dataTransfer.files[0];
-    if (droppedFile) {
-      setFileObjFn(droppedFile);
-      setPreviewFn(URL.createObjectURL(droppedFile));
-      setProgress(0);
-      setErrorMessage('');
-    }
-  };
-
-  const preventDefault = (event) => event.preventDefault();
-
-  const handleAnalyze = async () => {
-    if (!selectedPetSize) {
-      alert('Por favor selecciona el tamaño del paciente');
-      return;
-    }
-    if (!fileTransversalFile || !fileLongitudinalFile) {
-      alert('Por favor carga ambas imágenes (Transversal y Longitudinal)');
-      return;
-    }
-    
-    setErrorMessage('');
-    setProgress(0);
-    setIsUploading(true);
-    setStep(3); // Ir a pantalla de carga
-
-    try {
-    let prog = 0;
-      const progressTimer = setInterval(() => {
-        prog = Math.min(prog + 8, 95);
-      setProgress(prog);
-      }, 200);
-
-      const formData = new FormData();
-      formData.append('transversal', fileTransversalFile);
-      formData.append('longitudinal', fileLongitudinalFile);
-      formData.append('petSize', selectedPetSize);
-
-      const response = await fetch('https://backend-2-chi.vercel.app/api/subir-imagen', {
-        method: 'POST',
-        body: formData,
-      });
-      if (!response.ok) {
-        throw new Error(`Error del servidor (${response.status})`);
-      }
-      clearInterval(progressTimer);
-      setProgress(100);
-      // Esperar un momento antes de cambiar a la pantalla de resultado
-      setTimeout(() => {
-        setStep(4); // Ir a pantalla de resultado
-        setIsUploading(false);
-      }, 500);
-    } catch (err) {
-      setErrorMessage(err?.message || 'Error subiendo imágenes');
-      setStep(2); // Volver a la pantalla de carga de imágenes en caso de error
-      setIsUploading(false);
-    }
-  };
-
+  // Avanzar al siguiente paso
   const handleNext = () => {
     if (!selectedPetSize) {
       alert('Por favor selecciona el tamaño del paciente');
@@ -115,126 +45,178 @@ function MiComponente() {
     setStep(2);
   };
 
-  const handleDownload = async () => {
-    setErrorMessage('');
-    setIsDownloading(true);
-    setDownloadProgress(0);
-    
-    try {
-      // Simular progreso de descarga
-      const progressInterval = setInterval(() => {
-        setDownloadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 150);
-
-      // Simular espera de descarga (no hacer fetch todavía)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      clearInterval(progressInterval);
-      setDownloadProgress(100);
-      
-      // Crear un PDF simulado (placeholder)
-      // En producción, esto vendría del servidor
-      const pdfContent = '%PDF-1.4\n' +
-        '1 0 obj\n' +
-        '<< /Type /Catalog /Pages 2 0 R >>\n' +
-        'endobj\n' +
-        '2 0 obj\n' +
-        '<< /Type /Pages /Kids [3 0 R] /Count 1 >>\n' +
-        'endobj\n' +
-        '3 0 obj\n' +
-        '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\n' +
-        'endobj\n' +
-        '4 0 obj\n' +
-        '<< /Length 44 >>\n' +
-        'stream\n' +
-        'BT\n' +
-        '/F1 12 Tf\n' +
-        '100 700 Td\n' +
-        '(Resultado VeterinarIA) Tj\n' +
-        'ET\n' +
-        'endstream\n' +
-        'endobj\n' +
-        '5 0 obj\n' +
-        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n' +
-        'endobj\n' +
-        'xref\n' +
-        '0 6\n' +
-        '0000000000 65535 f \n' +
-        '0000000009 00000 n \n' +
-        '0000000058 00000 n \n' +
-        '0000000115 00000 n \n' +
-        '0000000294 00000 n \n' +
-        '0000000384 00000 n \n' +
-        'trailer\n' +
-        '<< /Size 6 /Root 1 0 R >>\n' +
-        'startxref\n' +
-        '478\n' +
-        '%%EOF';
-      
-      const blob = new Blob([pdfContent], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'Resultado-VeterinarIA.pdf';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      
-      // Volver a la pantalla de resultado después de un momento
-      setTimeout(() => {
-        setIsDownloading(false);
-        setDownloadProgress(0);
-      }, 500);
-    } catch (err) {
-      setErrorMessage(err?.message || 'Error descargando el PDF');
-      setIsDownloading(false);
-      setDownloadProgress(0);
+  // Manejar cambio de archivo
+  const handleFileChange = (e, setFileFn, setPreviewFn) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFileFn(file);
+      setPreviewFn(URL.createObjectURL(file));
+      setProgress(0);
     }
   };
 
-  // Pantalla de carga completa (Step 3)
+  // Manejar arrastrar y soltar archivo
+  const handleDrop = (event, setFileFn, setPreviewFn) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      setFileFn(file);
+      setPreviewFn(URL.createObjectURL(file));
+      setProgress(0);
+    }
+  };
+
+  const preventDefault = (event) => event.preventDefault();
+
+  // Simular análisis (sin conexión a backend)
+  const handleAnalyze = () => {
+    if (!file) {
+      alert('Por favor carga una imagen');
+      return;
+    }
+    
+    setProgress(0);
+    setStep(3); // Ir a pantalla de procesamiento
+
+    // Simular progreso de procesamiento
+    let currentProgress = 0;
+    const progressTimer = setInterval(() => {
+      currentProgress = Math.min(currentProgress + 8, 95);
+      setProgress(currentProgress);
+      
+      if (currentProgress >= 95) {
+        clearInterval(progressTimer);
+        setProgress(100);
+        setTimeout(() => {
+          setStep(4); // Ir a pantalla de resultado
+        }, 500);
+      }
+    }, 200);
+  };
+
+  // Simular descarga de PDF (sin conexión a backend)
+  const handleDownload = () => {
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    
+    // Simular progreso de descarga
+    let currentProgress = 0;
+    const progressInterval = setInterval(() => {
+      currentProgress = Math.min(currentProgress + 10, 90);
+      setDownloadProgress(currentProgress);
+      
+      if (currentProgress >= 90) {
+        clearInterval(progressInterval);
+        setDownloadProgress(100);
+        
+        // Crear PDF simulado
+        const pdfContent = '%PDF-1.4\n' +
+          '1 0 obj\n' +
+          '<< /Type /Catalog /Pages 2 0 R >>\n' +
+          'endobj\n' +
+          '2 0 obj\n' +
+          '<< /Type /Pages /Kids [3 0 R] /Count 1 >>\n' +
+          'endobj\n' +
+          '3 0 obj\n' +
+          '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\n' +
+          'endobj\n' +
+          '4 0 obj\n' +
+          '<< /Length 44 >>\n' +
+          'stream\n' +
+          'BT\n' +
+          '/F1 12 Tf\n' +
+          '100 700 Td\n' +
+          '(Resultado VeterinarIA) Tj\n' +
+          'ET\n' +
+          'endstream\n' +
+          'endobj\n' +
+          '5 0 obj\n' +
+          '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n' +
+          'endobj\n' +
+          'xref\n' +
+          '0 6\n' +
+          '0000000000 65535 f \n' +
+          '0000000009 00000 n \n' +
+          '0000000058 00000 n \n' +
+          '0000000115 00000 n \n' +
+          '0000000294 00000 n \n' +
+          '0000000384 00000 n \n' +
+          'trailer\n' +
+          '<< /Size 6 /Root 1 0 R >>\n' +
+          'startxref\n' +
+          '478\n' +
+          '%%EOF';
+        
+        const blob = new Blob([pdfContent], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Resultado-VeterinarIA.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        
+        setTimeout(() => {
+          setIsDownloading(false);
+          setDownloadProgress(0);
+        }, 500);
+      }
+    }, 150);
+  };
+
+  // Función para volver atrás desde el logo
+  const handleLogoClick = () => {
+    if (step === 2) {
+      // Desde carga de imagen, volver a selección de tamaño
+      setFile(null);
+      setFilePreview(null);
+      setStep(1);
+    } else if (step === 3) {
+      // Desde procesamiento, volver a carga de imagen
+      setStep(2);
+    } else if (step === 4) {
+      // Desde resultado, volver a carga de imagen
+      setStep(2);
+    }
+  };
+
+  // Componente del Header (reutilizable)
+  const Header = () => (
+    <header className="header">
+      <div className="header-inner">
+        <div 
+          className={`logo-container ${step >= 2 ? 'clickable' : ''}`}
+          onClick={step >= 2 ? handleLogoClick : undefined}
+        >
+          <img className="logo" src={logo} alt="Logo VeterinarIA" />
+          <span className="logo-text">VETERINARIA</span>
+        </div>
+        <div className="tagline">
+          ¡Facilita la interpretacion de ecografias!
+        </div>
+      </div>
+    </header>
+  );
+
+  // Pantalla de procesamiento (Step 3)
   if (step === 3) {
     return (
       <div className="veterinaria-app fullscreen-frame">
-        <header className="header">
-          <div className="header-inner">
-            <div className="logo-container">
-              <img
-                className="logo"
-                src={logo}
-                alt="Logo VeterinarIA"
-              />
-              <span className="logo-text">VETERINAR<span className="logo-ia">IA</span></span>
-            </div>
-            <div className="tagline">
-              ¡Facilita la interpretación de ecografías!
-            </div>
-          </div>
-        </header>
-
+        <Header />
         <main className="main-content fullscreen-main">
           <h1 className="frame-title">Resultado</h1>
-          
           <div className="loading-frame">
             <div className="loading-content">
-              <h2 className="loading-title">Descargando</h2>
+              <h2 className="loading-title">Procesando</h2>
               <p className="loading-subtitle">Esto puede tomar un rato</p>
-              
               <div className="progress-wrapper-fullscreen">
                 <div className="progress-track">
                   <div className="progress-fill" style={{ width: `${progress}%` }} />
                   <div className="progress-label">{progress}%</div>
                 </div>
               </div>
-              
-              <p className="loading-status">Subiendo</p>
+              <p className="loading-status">Analizando imágenes</p>
             </div>
           </div>
         </main>
@@ -246,37 +228,19 @@ function MiComponente() {
   if (isDownloading && step === 4) {
     return (
       <div className="veterinaria-app fullscreen-frame">
-        <header className="header">
-          <div className="header-inner">
-            <div className="logo-container">
-              <img
-                className="logo"
-                src={logo}
-                alt="Logo VeterinarIA"
-              />
-              <span className="logo-text">VETERINAR<span className="logo-ia">IA</span></span>
-            </div>
-            <div className="tagline">
-              ¡Facilita la interpretación de ecografías!
-            </div>
-          </div>
-        </header>
-
+        <Header />
         <main className="main-content fullscreen-main">
           <h1 className="frame-title">Resultado</h1>
-          
           <div className="loading-frame">
             <div className="loading-content">
               <h2 className="loading-title">Descargando</h2>
               <p className="loading-subtitle">Esto puede tomar un rato</p>
-              
               <div className="progress-wrapper-fullscreen">
                 <div className="progress-track">
                   <div className="progress-fill" style={{ width: `${downloadProgress}%` }} />
                   <div className="progress-label">{downloadProgress}%</div>
                 </div>
               </div>
-              
               <p className="loading-status">Descargando PDF</p>
             </div>
           </div>
@@ -289,25 +253,9 @@ function MiComponente() {
   if (step === 4) {
     return (
       <div className="veterinaria-app fullscreen-frame">
-        <header className="header">
-          <div className="header-inner">
-            <div className="logo-container">
-              <img
-                className="logo"
-                src={logo}
-                alt="Logo VeterinarIA"
-              />
-              <span className="logo-text">VETERINAR<span className="logo-ia">IA</span></span>
-            </div>
-            <div className="tagline">
-              ¡Facilita la interpretación de ecografías!
-            </div>
-          </div>
-        </header>
-
+        <Header />
         <main className="main-content fullscreen-main">
           <h1 className="frame-title">Resultado</h1>
-          
           <div className="result-frame">
             <div className="result-content">
               <button className="button-download-pdf" onClick={handleDownload}>
@@ -319,42 +267,18 @@ function MiComponente() {
               </button>
             </div>
           </div>
-
-          {errorMessage && (
-            <div className="error-message-fullscreen">
-              <div style={{ color: '#b00020' }}>{errorMessage}</div>
-            </div>
-          )}
         </main>
       </div>
     );
   }
 
-  // Pantallas normales (Step 1 y 2)
+  // Pantallas principales (Step 1 y 2)
   return (
     <div className="veterinaria-app">
-      {/* Header */}
-      <header className="header">
-        <div className="header-inner">
-          <div 
-            className={`logo-container ${step === 2 ? 'clickable' : ''}`}
-            onClick={step === 2 ? () => setStep(1) : undefined}
-          >
-            <img
-              className="logo"
-              src={logo}
-              alt="Logo VeterinarIA"
-            />
-            <span className="logo-text">VETERINAR<span className="logo-ia">IA</span></span>
-          </div>
-          <div className="tagline">
-            ¡Facilita la interpretación de ecografías!
-          </div>
-        </div>
-      </header>
+      <Header />
 
-      {/* Main Content */}
       <main className="main-content">
+        {/* Paso 1: Selección de tamaño */}
         {step === 1 && (
           <>
             <h1 className="main-instruction">
@@ -386,91 +310,51 @@ function MiComponente() {
           </>
         )}
 
+        {/* Paso 2: Carga de imagen */}
         {step === 2 && (
           <>
-            <div className="upload-grid">
-              <div className="upload-column">
-                <h3 className="upload-title">Transversal</h3>
-                <div
-                  className={`dropzone ${fileTransversalPreview ? 'has-file' : ''}`}
-                  onDragOver={preventDefault}
-                  onDragEnter={preventDefault}
-                  onDrop={(e) => handleDrop(e, setFileTransversalFile, setFileTransversalPreview)}
-                >
-                  <input
-                    ref={fileTransversalRef}
-                    type="file"
-                    id="fileTransversal"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, setFileTransversalFile, setFileTransversalPreview)}
-                    className="file-input"
+            <h1 className="main-instruction">Subir Imagen</h1>
+            
+            <div className="upload-container">
+              <div
+                className={`dropzone ${filePreview ? 'has-file' : ''}`}
+                onDragOver={preventDefault}
+                onDragEnter={preventDefault}
+                onDrop={(e) => handleDrop(e, setFile, setFilePreview)}
+              >
+                <input
+                  ref={fileRef}
+                  type="file"
+                  id="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, setFile, setFilePreview)}
+                  className="file-input"
+                />
+                {filePreview && (
+                  <img 
+                    src={filePreview} 
+                    alt="preview" 
+                    className="preview-inside clickable-image"
+                    onClick={() => fileRef.current?.click()}
                   />
-                  {fileTransversalPreview && (
-                    <img 
-                      src={fileTransversalPreview} 
-                      alt="transversal" 
-                      className="preview-inside clickable-image"
-                      onClick={() => fileTransversalRef.current?.click()}
-                    />
-                  )}
-                  <label htmlFor="fileTransversal" className={`dropzone-label ${fileTransversalPreview ? 'hidden' : ''}`}>
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7 18a4 4 0 0 1 0-8c.2 0 .4 0 .6.1A5 5 0 0 1 17 7a4 4 0 0 1 1 7.9V15a3 3 0 0 1-3 3H7z" stroke="#d7e8ff" strokeWidth="1.5" fill="none"/>
-                      <path d="M12 12v6M9.5 14.5H14.5" stroke="#d7e8ff" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                    <span>Cargar o arrastrar archivos aquí</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="upload-column">
-                <h3 className="upload-title">Longitudinal</h3>
-                <div
-                  className={`dropzone ${fileLongitudinalPreview ? 'has-file' : ''}`}
-                  onDragOver={preventDefault}
-                  onDragEnter={preventDefault}
-                  onDrop={(e) => handleDrop(e, setFileLongitudinalFile, setFileLongitudinalPreview)}
-                >
-                  <input
-                    ref={fileLongitudinalRef}
-                    type="file"
-                    id="fileLongitudinal"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, setFileLongitudinalFile, setFileLongitudinalPreview)}
-                    className="file-input"
-                  />
-                  {fileLongitudinalPreview && (
-                    <img 
-                      src={fileLongitudinalPreview} 
-                      alt="longitudinal" 
-                      className="preview-inside clickable-image"
-                      onClick={() => fileLongitudinalRef.current?.click()}
-                    />
-                  )}
-                  <label htmlFor="fileLongitudinal" className={`dropzone-label ${fileLongitudinalPreview ? 'hidden' : ''}`}>
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7 18a4 4 0 0 1 0-8c.2 0 .4 0 .6.1A5 5 0 0 1 17 7a4 4 0 0 1 1 7.9V15a3 3 0 0 1-3 3H7z" stroke="#d7e8ff" strokeWidth="1.5" fill="none"/>
-                      <path d="M12 12v6M9.5 14.5H14.5" stroke="#d7e8ff" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                    <span>Cargar o arrastrar archivos aquí</span>
-                  </label>
-                </div>
+                )}
+                <label htmlFor="file" className={`dropzone-label ${filePreview ? 'hidden' : ''}`}>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 18a4 4 0 0 1 0-8c.2 0 .4 0 .6.1A5 5 0 0 1 17 7a4 4 0 0 1 1 7.9V15a3 3 0 0 1-3 3H7z" stroke="#ffffff" strokeWidth="1.5" fill="none"/>
+                    <path d="M12 12v6M9.5 14.5H14.5" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <span>Cargar o arrastrar archivos aquí</span>
+                </label>
               </div>
             </div>
 
             <button 
               className="analyze-btn" 
               onClick={handleAnalyze}
-              disabled={!selectedPetSize || !fileTransversalFile || !fileLongitudinalFile || isUploading}
+              disabled={!file}
             >
               Analizar
             </button>
-
-            {errorMessage && (
-              <div className="error-message" style={{ color: '#b00020', marginTop: '20px' }}>
-                {errorMessage}
-          </div>
-        )}
           </>
         )}
       </main>
