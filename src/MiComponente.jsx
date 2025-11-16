@@ -67,8 +67,8 @@ function MiComponente() {
 
   const preventDefault = (event) => event.preventDefault();
 
-  // Simular análisis (sin conexión a backend)
-  const handleAnalyze = () => {
+  // Analizar imagen enviándola al backend
+  const handleAnalyze = async () => {
     if (!file) {
       alert('Por favor carga una imagen');
       return;
@@ -77,20 +77,74 @@ function MiComponente() {
     setProgress(0);
     setStep(3); // Ir a pantalla de procesamiento
 
-    // Simular progreso de procesamiento
-    let currentProgress = 0;
-    const progressTimer = setInterval(() => {
-      currentProgress = Math.min(currentProgress + 8, 95);
-      setProgress(currentProgress);
-      
-      if (currentProgress >= 95) {
-        clearInterval(progressTimer);
-        setProgress(100);
-        setTimeout(() => {
-          setStep(4); // Ir a pantalla de resultado
-        }, 500);
+    try {
+      // Crear FormData para enviar la imagen
+      const formData = new FormData();
+      // Enviar una sola imagen con el nombre 'imagen'
+      formData.append('imagen', file);
+
+      setProgress(20);
+
+      // Enviar imagen al backend
+      const response = await fetch('https://backend-2-chi.vercel.app/api/subir-imagen', {
+        method: 'POST',
+        body: formData,
+      });
+
+      setProgress(60);
+
+      if (!response.ok) {
+        // Intentar obtener más información del error
+        let errorMessage = `Error HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          console.error('Error del backend:', errorData);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (parseError) {
+          try {
+            const errorText = await response.text();
+            console.error('Error del backend (texto):', errorText);
+            if (errorText) {
+              errorMessage += `\nRespuesta: ${errorText}`;
+            }
+          } catch (textError) {
+            console.error('No se pudo leer la respuesta de error:', textError);
+          }
+        }
+        throw new Error(errorMessage);
       }
-    }, 200);
+
+      // La imagen se envió correctamente al backend
+      // La respuesta se usará en el futuro, por ahora solo verificamos que se envió
+      console.log('Imagen enviada correctamente al backend');
+      
+      setProgress(100);
+      
+      // Esperar un momento antes de cambiar a la pantalla de resultado
+      setTimeout(() => {
+        setStep(4); // Ir a pantalla de resultado
+      }, 500);
+
+    } catch (error) {
+      console.error('Error completo al analizar la imagen:', error);
+      console.error('Tipo de error:', error.constructor.name);
+      console.error('Stack trace:', error.stack);
+      
+      // Mostrar información más detallada del error
+      let errorMessage = 'Error al procesar la imagen.\n\n';
+      errorMessage += `Mensaje: ${error.message}\n`;
+      errorMessage += `Tipo: ${error.constructor.name}\n`;
+      
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        errorMessage += '\n⚠️ Error de red: No se pudo conectar al backend.\n';
+        errorMessage += 'Verifica que el backend esté disponible en:\n';
+        errorMessage += 'https://backend-2-chi.vercel.app/api/subir-imagen';
+      }
+      
+      alert(errorMessage);
+      setStep(2); // Volver a la pantalla de carga de imagen
+      setProgress(0);
+    }
   };
 
   // Simular descarga de PDF (sin conexión a backend)
