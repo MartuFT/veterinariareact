@@ -4,6 +4,10 @@ import logo from './imagenes/logo.png';
 import nube from './imagenes/nube.png';
 
 function MiComponente() {
+  // Estado para splash screen
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashFadeOut, setSplashFadeOut] = useState(false);
+  
   // Estado para selección de tamaño (solo visual, no se guarda)
   const [selectedPetSize, setSelectedPetSize] = useState(null);
   
@@ -18,9 +22,23 @@ function MiComponente() {
   // Referencia para input de archivo
   const fileRef = useRef(null);
 
-  // Deshabilitar scroll en pantallas de pantalla completa
+  // Mostrar splash screen por 2 segundos con fade out
   useEffect(() => {
-    if (step === 3 || step === 4) {
+    const timer = setTimeout(() => {
+      // Iniciar fade out
+      setSplashFadeOut(true);
+      // Ocultar splash después de la animación (500ms)
+      setTimeout(() => {
+        setShowSplash(false);
+      }, 500);
+    }, 2000); // 2 segundos
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Deshabilitar scroll en pantallas de pantalla completa y splash
+  useEffect(() => {
+    if (showSplash || step === 3 || step === 4) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -28,7 +46,7 @@ function MiComponente() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [step]);
+  }, [step, showSplash]);
 
   // Seleccionar tamaño de mascota (solo visual, no se guarda)
   const handlePetSizeSelect = (size) => {
@@ -89,6 +107,7 @@ function MiComponente() {
       const response = await fetch('https://backend-2-chi.vercel.app/api/subir-imagen', {
         method: 'POST',
         body: formData,
+     
       });
 
       setProgress(60);
@@ -117,6 +136,8 @@ function MiComponente() {
       // La imagen se envió correctamente al backend
       // La respuesta se usará en el futuro, por ahora solo verificamos que se envió
       console.log('Imagen enviada correctamente al backend');
+      const data = await response.json();
+      console.log(data);
       
       setProgress(100);
       
@@ -215,17 +236,17 @@ function MiComponente() {
   };
 
   // Componente del Header (reutilizable)
-  const Header = () => (
+  const Header = ({ stepType, handleLogoClick }) => (
     <header className="header">
       <div className="header-inner">
         <div 
-          className={`logo-container ${step >= 2 ? 'clickable' : ''}`}
-          onClick={step >= 2 ? handleLogoClick : undefined}
+          className={`logo-container ${stepType >= 2 ? 'clickable' : ''} step-${stepType}`}
+          onClick={stepType >= 2 ? handleLogoClick : undefined}
         >
           <img className="logo" src={logo} alt="Logo VeterinarIA" />
         </div>
   
-        {step === 1 && (
+        {stepType === 1 && (
           <div className="tagline">
             ¡Facilita la interpretación de radiografías!
           </div>
@@ -238,7 +259,7 @@ function MiComponente() {
   if (step === 3) {
     return (
       <div className="veterinaria-app fullscreen-frame">
-        <Header />
+        <Header stepType="processing" />
         <main className="main-content fullscreen-main">
           <h1 className="frame-title">Resultado</h1>
           <div className="loading-frame">
@@ -264,7 +285,7 @@ function MiComponente() {
   if (step === 4) {
     return (
       <div className="veterinaria-app fullscreen-frame">
-        <Header />
+        <Header stepType="result" />
         <main className="main-content fullscreen-main">
           <h1 className="frame-title">Resultado</h1>
           <div className="result-frame">
@@ -287,7 +308,7 @@ function MiComponente() {
   if (step === 2) {
     return (
       <div className="veterinaria-app fullscreen-frame">
-        <Header />
+        <Header stepType="upload" />
         <main className="main-content fullscreen-main">
           <h1 className="frame-title">Subir imagen</h1>
           <div className="upload-frame">
@@ -336,10 +357,21 @@ function MiComponente() {
     );
   }
 
+  // Splash Screen
+  if (showSplash) {
+    return (
+      <div className={`splash-screen ${splashFadeOut ? 'fade-out' : ''}`}>
+        <div className="splash-content">
+          <img src={logo} alt="VeterinarIA Logo" className="splash-logo" />
+        </div>
+      </div>
+    );
+  }
+
   // Pantalla principal (Step 1)
   return (
     <div className="veterinaria-app">
-      <Header />
+      <Header stepType="size-selection" />
 
       <main className="main-content">
         <h1 className="main-instruction">

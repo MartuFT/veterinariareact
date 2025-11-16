@@ -1,13 +1,85 @@
 
+/* Splash Screen */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #174b86; /* Color azul del fondo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.splash-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90%;
+  max-height: 90%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  visibility: hidden; /* Oculto hasta que la animación comience */
+  animation: splashFadeIn 0.3s ease-in 0.1s forwards;
+}
+
+@keyframes splashFadeIn {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  1% {
+    visibility: visible;
+  }
+  100% {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
 
 .veterinaria-app {
   font-family: Arial, sans-serif;
   max-width: 100%;
   width: 100%;
   margin: 0;
-  padding: 12px 72px 64px 72px; /* ocupa más a los costados */
+  padding: 12px 72px 64px 72px; /* ocupa más a los costados - padding izquierdo igual a fullscreen */
   color: #ebf2ff; /* texto encima del fondo azul */
+  box-sizing: border-box; /* Asegura que el padding se incluya en el ancho */
+  position: relative; /* Para posicionamiento absoluto si es necesario */
 }
+
+/* Ajustar padding izquierdo para compensar el padding del content-wrapper (20px) */
+/* El content-wrapper agrega 20px, así que necesitamos 52px aquí para totalizar 72px como fullscreen */
+.veterinaria-app:not(.fullscreen-frame) {
+  padding-left: 52px !important; /* 52px + 20px (content-wrapper) = 72px total, igual que fullscreen */
+}
+
+/* Asegurar padding consistente en pantallas fullscreen - el padding ya está definido abajo */
 
 .header {
   margin-bottom: 80px; /*logo y vet */
@@ -15,6 +87,9 @@
   display: flex;
   align-items: center;
   position: relative; /* Para contener el logo */
+  margin-left: 0 !important; /* Forzar sin margen izquierdo */
+  padding-left: 0 !important; /* Forzar sin padding izquierdo adicional */
+  width: 100%; /* Ocupar todo el ancho disponible */
 }
 
 .header-inner {
@@ -24,6 +99,8 @@
   width: 100%;
   height: 68px; /* Altura fija - NO cambiar */
   position: relative;
+  margin-left: 0; /* Sin margen izquierdo */
+  padding-left: 0; /* Sin padding izquierdo */
 }
 
 /* Logo + texto alineados */
@@ -36,6 +113,32 @@
   width: auto;
   flex-shrink: 0; /* No se encoge */
   overflow: visible; /* Permite que el logo se vea aunque sea más grande */
+  margin-left: 0; /* Alineado completamente a la izquierda */
+  padding-left: 0; /* Sin padding adicional */
+  position: relative;
+  left: 0; /* Posición base - sin desplazamiento */
+}
+
+/* Logo en pantalla de selección de tamaño - misma posición que pantalla de subir imagen */
+.logo-container.step-1,
+.logo-container.step-size-selection {
+  left: 0; /* Misma posición que la pantalla de subir imagen (ya está compensado en el padding del contenedor) */
+  margin-left: 0;
+  padding-left: 0;
+}
+
+/* Logo en pantalla de subir imagen - misma posición que pantalla de tamaño */
+.logo-container.step-2,
+.logo-container.step-upload {
+  left: 0; /* Misma posición que la pantalla de tamaño */
+}
+
+/* Logo en pantallas fullscreen (procesando, resultado) - posición normal */
+.logo-container.step-3,
+.logo-container.step-4,
+.logo-container.step-processing,
+.logo-container.step-result {
+  left: 0; /* Posición normal, sin desplazamiento */
 }
 
 .logo-container.clickable {
@@ -356,12 +459,13 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  padding: 24px 72px;
+  padding: 24px 72px; /* Padding izquierdo igual a .veterinaria-app */
   overflow: hidden;
   display: flex;
   flex-direction: column;
   z-index: 1000;
   background: transparent;
+  box-sizing: border-box; /* Asegura que el padding se incluya en el ancho */
 }
 
 .fullscreen-frame .header {

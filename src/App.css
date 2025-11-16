@@ -36,6 +36,11 @@ body {
   padding: 20px;
 }
 
+/* Cuando el veterinaria-app no es fullscreen-frame, reducir el padding izquierdo del content-wrapper */
+.content-wrapper .veterinaria-container:has(.veterinaria-app:not(.fullscreen-frame)) {
+  margin-left: -20px; /* Compensar el padding del content-wrapper solo para la pantalla principal */
+}
+
 /*que cuando aparezca venga de a poquitooo*/
 @keyframes fadeIn {
   from {
