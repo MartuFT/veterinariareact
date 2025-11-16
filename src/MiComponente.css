@@ -122,23 +122,37 @@
 /* Logo en pantalla de selección de tamaño - misma posición que pantalla de subir imagen */
 .logo-container.step-1,
 .logo-container.step-size-selection {
-  left: 0; /* Misma posición que la pantalla de subir imagen (ya está compensado en el padding del contenedor) */
-  margin-left: 0;
+  left: -103px; /* Movido hacia la izquierda */
+  margin-left: -100px;
+  margin-top: -100px; /* Movido hacia arriba */
   padding-left: 0;
 }
 
 /* Logo en pantalla de subir imagen - misma posición que pantalla de tamaño */
 .logo-container.step-2,
 .logo-container.step-upload {
-  left: 0; /* Misma posición que la pantalla de tamaño */
+  left: -103px; /* Misma posición que la pantalla de tamaño */
+  margin-left: 43px;
+  margin-top: -34px; /* Movido hacia arriba */
+  padding-left: 0;
 }
 
-/* Logo en pantallas fullscreen (procesando, resultado) - posición normal */
+/* Logo en pantalla de procesando - posición normal */
 .logo-container.step-3,
-.logo-container.step-4,
-.logo-container.step-processing,
-.logo-container.step-result {
+.logo-container.step-processing {
   left: 0; /* Posición normal, sin desplazamiento */
+   margin-left: -60px;
+  margin-top: -34px; /* Movido hacia arriba */
+  padding-left: 0;
+}
+
+/* Logo en pantalla de resultado - misma posición que pantalla de tamaño */
+.logo-container.step-4,
+.logo-container.step-result {
+  left: -103px; /* Misma posición que la pantalla de tamaño */
+  margin-left: 43px;
+  margin-top: -34px; /* Movido hacia arriba */
+  padding-left: 0;
 }
 
 .logo-container.clickable {
@@ -171,6 +185,9 @@
   color: #ffffff;
   font-weight: 400;
   text-align: right;
+  margin-top: -20px; /* Movido hacia arriba */
+  margin-right: -220px; /* Movido más a la derecha */
+  align-self: flex-start; /* Alineado arriba en el flex container */
 }
 
 .main-content {
@@ -184,6 +201,8 @@
   margin-top: 0;
   margin-bottom: 56px; /* más separación con los botones */
   line-height: 1.2;
+  position: relative; /* Permite mover el elemento sin afectar otros */
+  top: -65px; /* Mueve el texto hacia arriba sin afectar el flujo del documento */
 }
 
 .pet-size-selection {
@@ -477,9 +496,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* Cambiar de center a flex-start */
   min-height: 0;
   overflow: hidden;
+  padding-top: 40px; /* Espacio fijo desde arriba para el título */
 }
 
 .frame-title {
@@ -488,6 +508,8 @@
   margin-bottom: 40px;
   font-weight: 700;
   letter-spacing: 2px;
+  margin-top: 0; /* Asegurar que no tenga margen superior */
+  flex-shrink: 0; /* No se encoge */
 }
 
 /* Loading frame */
@@ -555,7 +577,7 @@
   width: 100%;
   max-width: 700px;
   min-height: 400px;
-  background: rgba(25, 45, 80, 0.6);
+  background-color: #174b86;
   border-radius: 16px;
   padding: 40px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);

@@ -241,7 +241,7 @@ function MiComponente() {
       <div className="header-inner">
         <div 
           className={`logo-container ${stepType >= 2 ? 'clickable' : ''} step-${stepType}`}
-          onClick={stepType >= 2 ? handleLogoClick : undefined}
+          onClick={stepType >= 2 && handleLogoClick ? handleLogoClick : undefined}
         >
           <img className="logo" src={logo} alt="Logo VeterinarIA" />
         </div>
@@ -259,7 +259,7 @@ function MiComponente() {
   if (step === 3) {
     return (
       <div className="veterinaria-app fullscreen-frame">
-        <Header stepType="processing" />
+        <Header stepType={3} handleLogoClick={handleLogoClick} />
         <main className="main-content fullscreen-main">
           <h1 className="frame-title">Resultado</h1>
           <div className="loading-frame">
@@ -285,7 +285,7 @@ function MiComponente() {
   if (step === 4) {
     return (
       <div className="veterinaria-app fullscreen-frame">
-        <Header stepType="result" />
+        <Header stepType={4} handleLogoClick={handleLogoClick} />
         <main className="main-content fullscreen-main">
           <h1 className="frame-title">Resultado</h1>
           <div className="result-frame">
@@ -308,7 +308,7 @@ function MiComponente() {
   if (step === 2) {
     return (
       <div className="veterinaria-app fullscreen-frame">
-        <Header stepType="upload" />
+        <Header stepType={2} handleLogoClick={handleLogoClick} />
         <main className="main-content fullscreen-main">
           <h1 className="frame-title">Subir imagen</h1>
           <div className="upload-frame">
@@ -371,7 +371,7 @@ function MiComponente() {
   // Pantalla principal (Step 1)
   return (
     <div className="veterinaria-app">
-      <Header stepType="size-selection" />
+      <Header stepType={1} handleLogoClick={handleLogoClick} />
 
       <main className="main-content">
         <h1 className="main-instruction">
