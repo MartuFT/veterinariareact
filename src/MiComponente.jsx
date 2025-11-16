@@ -219,20 +219,13 @@ function MiComponente() {
     window.URL.revokeObjectURL(url);
   };
 
-  // Función para volver atrás desde el logo
+  // Función para volver atrás desde el logo - siempre vuelve a seleccionar tamaño
   const handleLogoClick = () => {
-    if (step === 2) {
-      // Desde carga de imagen, volver a selección de tamaño
-      setFile(null);
-      setFilePreview(null);
-      setStep(1);
-    } else if (step === 3) {
-      // Desde procesamiento, volver a carga de imagen
-      setStep(2);
-    } else if (step === 4) {
-      // Desde resultado, volver a carga de imagen
-      setStep(2);
-    }
+    // Limpiar archivos si hay alguno cargado
+    setFile(null);
+    setFilePreview(null);
+    // Siempre volver a la pantalla de seleccionar tamaño (step 1)
+    setStep(1);
   };
 
   // Componente del Header (reutilizable)
