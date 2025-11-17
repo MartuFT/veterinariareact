@@ -101,17 +101,35 @@ function MiComponente() {
     try {
       // Crear FormData para enviar la imagen
       const formData = new FormData();
-      // Enviar una sola imagen con el nombre 'imagen'
-      formData.append('imagen', file);
+    
+      formData.append('image', file);
 
       setProgress(20);
 
+      // URL del backend configurada en src/config.js
+      console.log('Intentando conectar a:', API_ENDPOINTS.SUBIR_IMAGEN);
+      
+      // Crear AbortController para timeout (conexiones WiFi pueden ser lentas)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.log('Timeout: La conexión tardó más de 2 minutos');
+        controller.abort();
+      }, 120000); // 2 minutos de timeout para conexiones WiFi
+      
       // Enviar imagen al backend
-      const response = await fetch('https://backend-2-chi.vercel.app/api/subir-imagen', {
-        method: 'POST',
-        body: formData,
-     
-      });
+      let response;
+      try {
+        response = await fetch(API_ENDPOINTS.SUBIR_IMAGEN, {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        // Relanzar el error para que se maneje en el catch principal
+        throw fetchError;
+      }
 
       setProgress(60);
 
@@ -164,10 +182,44 @@ function MiComponente() {
       errorMessage += `Mensaje: ${error.message}\n`;
       errorMessage += `Tipo: ${error.constructor.name}\n`;
       
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        errorMessage += '\n⚠️ Error de red: No se pudo conectar al backend.\n';
-        errorMessage += 'Verifica que el backend esté disponible en:\n';
-        errorMessage += 'https://backend-2-chi.vercel.app/api/subir-imagen';
+      // Detectar diferentes tipos de errores
+      if (error.name === 'AbortError') {
+        errorMessage += '\n⏱️ Tiempo de espera agotado (más de 2 minutos).\n\n';
+        errorMessage += 'La conexión WiFi tardó demasiado. Posibles causas:\n';
+        errorMessage += '- Conexión WiFi lenta o inestable\n';
+        errorMessage += '- Imagen muy grande para enviar por WiFi\n';
+        errorMessage += '- El servidor no responde\n\n';
+        errorMessage += '💡 Intenta:\n';
+        errorMessage += '- Verificar la velocidad de tu WiFi\n';
+        errorMessage += '- Reducir el tamaño de la imagen\n';
+        errorMessage += '- Verificar que ambas PCs estén en la misma red WiFi\n';
+        errorMessage += '- Intentar nuevamente';
+      } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        errorMessage += '\n⚠️ Error de conexión WiFi: No se pudo conectar al backend.\n\n';
+        errorMessage += '🔍 Pasos para solucionar (Backend en otra PC vía WiFi):\n\n';
+        errorMessage += '1. Verifica la IP correcta de la PC del backend:\n';
+        errorMessage += '   - En la PC del backend, ejecuta: ipconfig\n';
+        errorMessage += '   - Busca "Adaptador de LAN inalámbrica Wi-Fi" → "Dirección IPv4"\n';
+        errorMessage += '   - Copia esa IP y actualiza src/config.js si es diferente\n';
+        errorMessage += `   - IP actual configurada: ${API_ENDPOINTS.SUBIR_IMAGEN.replace('/api/subir-imagen', '').replace('http://', '')}\n\n`;
+        errorMessage += '2. Verifica que el backend esté corriendo:\n';
+        errorMessage += '   - En la PC del backend, debe mostrar: "Servidor escuchando en puerto 3000"\n';
+        errorMessage += '   - IMPORTANTE: El servidor debe escuchar en 0.0.0.0, no solo en localhost\n';
+        errorMessage += '   - Ejemplo: app.listen(3000, "0.0.0.0", ...)\n\n';
+        errorMessage += '3. Prueba la conexión HTTP (más confiable que ping):\n';
+        errorMessage += `   - Abre en el navegador: ${API_ENDPOINTS.SUBIR_IMAGEN.replace('/api/subir-imagen', '')}\n`;
+        errorMessage += '   - Si ves una respuesta (aunque sea error 404), la conexión funciona\n';
+        errorMessage += '   - Si no carga, el problema es de red o firewall\n\n';
+        errorMessage += '4. Verifica el firewall en la PC del backend:\n';
+        errorMessage += '   - Windows: Panel de control > Firewall > Configuración avanzada\n';
+        errorMessage += '   - Reglas de entrada > Nueva regla > Puerto > TCP > 3000\n';
+        errorMessage += '   - Permitir la conexión > Aplicar a todos los perfiles\n\n';
+        errorMessage += '5. Nota sobre ping:\n';
+        errorMessage += '   - Si el ping falla pero HTTP funciona, es normal (firewall bloquea ICMP)\n';
+        errorMessage += '   - Prueba con: telnet 10.12.222.75 3000 (debe conectar)\n\n';
+        errorMessage += '6. Verifica CORS en el backend:\n';
+        errorMessage += '   - El backend debe tener CORS configurado\n';
+        errorMessage += '   - Debe permitir: http://localhost:5173';
       }
       
       alert(errorMessage);
