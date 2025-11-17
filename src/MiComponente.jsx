@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './MiComponente.css';
 import logo from './imagenes/logo.png';
 import nube from './imagenes/nube.png';
+import jsPDF from 'jspdf';
 
 function MiComponente() {
   // Estado para splash screen
@@ -18,6 +19,7 @@ function MiComponente() {
   // Estados para progreso y navegación
   const [progress, setProgress] = useState(0);
   const [step, setStep] = useState(1); // 1: selección tamaño, 2: carga, 3: procesando, 4: resultado
+  const [resultadoTexto, setResultadoTexto] = useState('');
   
   // Referencia para input de archivo
   const fileRef = useRef(null);
@@ -139,6 +141,11 @@ function MiComponente() {
       const data = await response.json();
       console.log(data);
       
+      // Guardar el texto del resultado del backend
+      // Intentar obtener el texto de diferentes campos posibles
+      const textoResultado = data.resultado || data.mensaje || data.texto || JSON.stringify(data, null, 2);
+      setResultadoTexto(textoResultado);
+      
       setProgress(100);
       
       // Esperar un momento antes de cambiar a la pantalla de resultado
@@ -168,55 +175,51 @@ function MiComponente() {
     }
   };
 
-  // Simular descarga de PDF (sin conexión a backend)
+  // Generar y descargar PDF con el resultado del backend
   const handleDownload = () => {
-    // Crear PDF simulado directamente sin cambiar de pantalla
-    const pdfContent = '%PDF-1.4\n' +
-      '1 0 obj\n' +
-      '<< /Type /Catalog /Pages 2 0 R >>\n' +
-      'endobj\n' +
-      '2 0 obj\n' +
-      '<< /Type /Pages /Kids [3 0 R] /Count 1 >>\n' +
-      'endobj\n' +
-      '3 0 obj\n' +
-      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\n' +
-      'endobj\n' +
-      '4 0 obj\n' +
-      '<< /Length 44 >>\n' +
-      'stream\n' +
-      'BT\n' +
-      '/F1 12 Tf\n' +
-      '100 700 Td\n' +
-      '(Resultado VeterinarIA) Tj\n' +
-      'ET\n' +
-      'endstream\n' +
-      'endobj\n' +
-      '5 0 obj\n' +
-      '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n' +
-      'endobj\n' +
-      'xref\n' +
-      '0 6\n' +
-      '0000000000 65535 f \n' +
-      '0000000009 00000 n \n' +
-      '0000000058 00000 n \n' +
-      '0000000115 00000 n \n' +
-      '0000000294 00000 n \n' +
-      '0000000384 00000 n \n' +
-      'trailer\n' +
-      '<< /Size 6 /Root 1 0 R >>\n' +
-      'startxref\n' +
-      '478\n' +
-      '%%EOF';
+    // Crear nuevo documento PDF
+    const doc = new jsPDF();
     
-    const blob = new Blob([pdfContent], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Resultado-VeterinarIA.pdf';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
+    // Título
+    doc.setFontSize(20);
+    doc.text('Resultado VeterinarIA', 105, 20, { align: 'center' });
+    
+    // Línea separadora
+    doc.setLineWidth(0.5);
+    doc.line(20, 30, 190, 30);
+    
+    // Contenido del resultado del backend
+    if (resultadoTexto) {
+      doc.setFontSize(12);
+      // Dividir el texto en líneas que quepan en el ancho de la página
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      
+      // Dividir el texto en líneas
+      const lines = doc.splitTextToSize(resultadoTexto, maxWidth);
+      
+      let yPosition = 45;
+      const lineHeight = 7;
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const bottomMargin = 20;
+      
+      // Agregar texto línea por línea, creando nuevas páginas si es necesario
+      lines.forEach((line) => {
+        if (yPosition + lineHeight > pageHeight - bottomMargin) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        doc.text(line, margin, yPosition);
+        yPosition += lineHeight;
+      });
+    } else {
+      doc.setFontSize(12);
+      doc.text('No hay resultado disponible', 20, 45);
+    }
+    
+    // Guardar el PDF
+    doc.save('Resultado-VeterinarIA.pdf');
   };
 
   // Función para volver atrás desde el logo - siempre vuelve a seleccionar tamaño
@@ -224,6 +227,8 @@ function MiComponente() {
     // Limpiar archivos si hay alguno cargado
     setFile(null);
     setFilePreview(null);
+    // Limpiar resultado anterior
+    setResultadoTexto('');
     // Siempre volver a la pantalla de seleccionar tamaño (step 1)
     setStep(1);
   };
@@ -289,7 +294,7 @@ function MiComponente() {
               </svg>
             </button>
             <div className="result-text">
-              Textitoo
+              {resultadoTexto || 'Procesando resultado...'}
             </div>
           </div>
         </main>
