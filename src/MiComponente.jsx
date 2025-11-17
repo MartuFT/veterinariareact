@@ -9,27 +9,27 @@ function MiComponente() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashFadeOut, setSplashFadeOut] = useState(false);
   
-  // Estado para selección de tamaño (solo visual, no se guarda)
+  // Estado para selección de tamaño 
   const [selectedPetSize, setSelectedPetSize] = useState(null);
   
-  // Estados para archivos y previsualizaciones
+  // Estados para previsualizar
   const [file, setFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   
-  // Estados para progreso y navegación
+  // Estados para la de progreso 
   const [progress, setProgress] = useState(0);
   const [step, setStep] = useState(1); // 1: selección tamaño, 2: carga, 3: procesando, 4: resultado
   const [resultadoTexto, setResultadoTexto] = useState('');
   
-  // Referencia para input de archivo
+  
   const fileRef = useRef(null);
 
-  // Mostrar splash screen por 2 segundos con fade out
+  // Mostrar splash screen por 2 segundos con y dsp se vaya despacito
   useEffect(() => {
     const timer = setTimeout(() => {
       // Iniciar fade out
       setSplashFadeOut(true);
-      // Ocultar splash después de la animación (500ms)
+      // Ocultar splash después de la animación 
       setTimeout(() => {
         setShowSplash(false);
       }, 500);
@@ -38,7 +38,7 @@ function MiComponente() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Deshabilitar scroll en pantallas de pantalla completa y splash
+  
   useEffect(() => {
     if (showSplash || step === 3 || step === 4) {
       document.body.style.overflow = 'hidden';
@@ -50,7 +50,7 @@ function MiComponente() {
     };
   }, [step, showSplash]);
 
-  // Seleccionar tamaño de mascota (solo visual, no se guarda)
+  
   const handlePetSizeSelect = (size) => {
     setSelectedPetSize(size);
   };
@@ -64,7 +64,7 @@ function MiComponente() {
     setStep(2);
   };
 
-  // Manejar cambio de archivo
+  // cambio de archivo
   const handleFileChange = (e, setFileFn, setPreviewFn) => {
     const file = e.target.files[0];
     if (file) {
@@ -74,7 +74,7 @@ function MiComponente() {
     }
   };
 
-  // Manejar arrastrar y soltar archivo
+  // arrastrar y soltar archivo
   const handleDrop = (event, setFileFn, setPreviewFn) => {
     event.preventDefault();
     const file = event.dataTransfer.files?.[0];
@@ -95,7 +95,7 @@ function MiComponente() {
     }
     
     setProgress(0);
-    setStep(3); // Ir a pantalla de procesamiento
+    setStep(3); // Ir a pantalla de procesarr
 
     try {
       // Crear FormData para enviar la imagen
@@ -115,7 +115,7 @@ function MiComponente() {
       setProgress(60);
 
       if (!response.ok) {
-        // Intentar obtener más información del error
+        // solo para cuando tenemos mala leche y no funca
         let errorMessage = `Error HTTP ${response.status}: ${response.statusText}`;
         try {
           const errorData = await response.json();
@@ -136,13 +136,13 @@ function MiComponente() {
       }
 
       // La imagen se envió correctamente al backend
-      // La respuesta se usará en el futuro, por ahora solo verificamos que se envió
+    
       console.log('Imagen enviada correctamente al backend');
       const data = await response.json();
       console.log(data);
       
       // Guardar el texto del resultado del backend
-      // Intentar obtener el texto de diferentes campos posibles
+    
       const textoResultado = data.resultado || data.mensaje || data.texto || JSON.stringify(data, null, 2);
       setResultadoTexto(textoResultado);
       
@@ -152,7 +152,7 @@ function MiComponente() {
       setTimeout(() => {
         setStep(4); // Ir a pantalla de resultado
       }, 500);
-
+//errooooooooor nooooooooo
     } catch (error) {
       console.error('Error completo al analizar la imagen:', error);
       console.error('Tipo de error:', error.constructor.name);
@@ -184,7 +184,7 @@ function MiComponente() {
     doc.setFontSize(20);
     doc.text('Resultado VeterinarIA', 105, 20, { align: 'center' });
     
-    // Línea separadora
+    // Línea separadora del pdf para tunearlo
     doc.setLineWidth(0.5);
     doc.line(20, 30, 190, 30);
     
@@ -222,7 +222,7 @@ function MiComponente() {
     doc.save('Resultado-VeterinarIA.pdf');
   };
 
-  // Función para volver atrás desde el logo - siempre vuelve a seleccionar tamaño
+  // volver atrás desde el logo 
   const handleLogoClick = () => {
     // Limpiar archivos si hay alguno cargado
     setFile(null);
@@ -253,7 +253,7 @@ function MiComponente() {
     </header>
   );
 
-  // Pantalla de procesamiento (Step 3)
+  // Pantalla de procesar (Step 3)
   if (step === 3) {
     return (
       <div className="veterinaria-app fullscreen-frame">
@@ -355,7 +355,7 @@ function MiComponente() {
     );
   }
 
-  // Splash Screen
+  // Splash Screen la step 0 seria
   if (showSplash) {
     return (
       <div className={`splash-screen ${splashFadeOut ? 'fade-out' : ''}`}>

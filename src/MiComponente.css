@@ -45,7 +45,7 @@
   visibility: hidden; /* Oculto hasta que la animación comience */
   animation: splashFadeIn 0.3s ease-in 0.1s forwards;
 }
-
+/*el splash es la primer pant*/
 @keyframes splashFadeIn {
   0% {
     opacity: 0;
@@ -67,16 +67,15 @@
   max-width: 100%;
   width: 100%;
   margin: 0;
-  padding: 12px 72px 64px 72px; /* ocupa más a los costados - padding izquierdo igual a fullscreen */
+  padding: 12px 72px 64px 72px; 
   color: #ebf2ff; /* texto encima del fondo azul */
   box-sizing: border-box; /* Asegura que el padding se incluya en el ancho */
-  position: relative; /* Para posicionamiento absoluto si es necesario */
+  position: relative; 
 }
 
-/* Ajustar padding izquierdo para compensar el padding del content-wrapper (20px) */
-/* El content-wrapper agrega 20px, así que necesitamos 52px aquí para totalizar 72px como fullscreen */
+
 .veterinaria-app:not(.fullscreen-frame) {
-  padding-left: 52px !important; /* 52px + 20px (content-wrapper) = 72px total, igual que fullscreen */
+  padding-left: 52px !important; /* igual que fullscreen */
 }
 
 /* Asegurar padding consistente en pantallas fullscreen - el padding ya está definido abajo */
@@ -99,8 +98,8 @@
   width: 100%;
   height: 68px; /* Altura fija - NO cambiar */
   position: relative;
-  margin-left: 0; /* Sin margen izquierdo */
-  padding-left: 0; /* Sin padding izquierdo */
+  margin-left: 0;
+  padding-left: 0; 
 }
 
 /* Logo + texto alineados */
@@ -109,49 +108,49 @@
   align-items: center;
   justify-content: flex-start;
   height: 68px; /* Altura fija - NO cambiar */
-  min-width: 48px; /* Ancho mínimo - ajustar si el logo es mucho más grande */
+  min-width: 48px; /* Ancho mínimo*/
   width: auto;
-  flex-shrink: 0; /* No se encoge */
+  flex-shrink: 0; /* ya no se achicaa*/
   overflow: visible; /* Permite que el logo se vea aunque sea más grande */
   margin-left: 0; /* Alineado completamente a la izquierda */
-  padding-left: 0; /* Sin padding adicional */
+  padding-left: 0; 
   position: relative;
   left: 0; /* Posición base - sin desplazamiento */
 }
-
-/* Logo en pantalla de selección de tamaño - misma posición que pantalla de subir imagen */
+/*step 1 es elegir tamaño*/
+/* Logo en misma posición que pantalla de subir imagen */
 .logo-container.step-1,
 .logo-container.step-size-selection {
-  left: -103px; /* Movido hacia la izquierda */
+  left: -103px; 
   margin-left: -100px;
-  margin-top: -100px; /* Movido hacia arriba */
+  margin-top: -100px; 
   padding-left: 0;
 }
-
-/* Logo en pantalla de subir imagen - misma posición que pantalla de tamaño */
+/*step 2 subir imagenn*/
+/*  misma posición que pantalla de tamaño */
 .logo-container.step-2,
 .logo-container.step-upload {
   left: -103px; /* Misma posición que la pantalla de tamaño */
   margin-left: 43px;
-  margin-top: -34px; /* Movido hacia arriba */
+  margin-top: -34px; 
   padding-left: 0;
 }
 
-/* Logo en pantalla de procesando - posición normal */
+/* step 3pantalla de procesando */
 .logo-container.step-3,
 .logo-container.step-processing {
-  left: 0; /* Posición normal, sin desplazamiento */
+  left: 0;
    margin-left: -60px;
-  margin-top: -34px; /* Movido hacia arriba */
+  margin-top: -34px; 
   padding-left: 0;
 }
 
-/* Logo en pantalla de resultado - misma posición que pantalla de tamaño */
+/* step 4pantalla de resultado*/
 .logo-container.step-4,
 .logo-container.step-result {
   left: -103px; /* Misma posición que la pantalla de tamaño */
   margin-left: 43px;
-  margin-top: -34px; /* Movido hacia arriba */
+  margin-top: -34px; 
   padding-left: 0;
 }
 
@@ -165,13 +164,13 @@
 }
 
 .logo {
-  width: 300px; /* Cambiar solo estos valores para modificar el tamaño del logo */
-  height: 300px; /* Cambiar solo estos valores para modificar el tamaño del logo */
+  width: 300px; /* solo modificar de aca el logo*/
+  height: 300px; /* y de aca */
   object-fit: contain;
   display: block;
-  margin: 0; /* Sin márgenes que afecten el layout */
-  padding: 0; /* Sin padding que afecten el layout */
-  flex-shrink: 0; /* No se encoge */
+  margin: 0;
+  padding: 0; 
+  flex-shrink: 0; /* dejate de achicar pls */
 }
 
 .upload-icon {
@@ -179,37 +178,37 @@
   height: 48px;
   object-fit: contain;
 }
-
+/*tagline es el de facilite la coso de radiografias*/
 .tagline {
   font-size: 1rem;
   color: #ffffff;
   font-weight: 400;
   text-align: right;
-  margin-top: -20px; /* Movido hacia arriba */
-  margin-right: -220px; /* Movido más a la derecha */
-  align-self: flex-start; /* Alineado arriba en el flex container */
+  margin-top: -20px; 
+  margin-right: -220px; 
+  align-self: flex-start; 
 }
 
 .main-content {
   text-align: center;
   margin-top: 0; 
 }
-
+/*la instruccion de clickea la opcion de tamaño*/
 .main-instruction {
   font-size: 2.2rem;
   color: #ffffff;
   margin-top: 0;
-  margin-bottom: 56px; /* más separación con los botones */
+  margin-bottom: 56px; 
   line-height: 1.2;
-  position: relative; /* Permite mover el elemento sin afectar otros */
-  top: -65px; /* Mueve el texto hacia arriba sin afectar el flujo del documento */
+  position: relative; 
+  top: -65px; 
 }
 
 .pet-size-selection {
   display: flex;
   justify-content: center;
-  gap: 88px; /* mucho más espacio entre los tres botones */
-  margin-bottom: 40px; /* separa más los botones del resto */
+  gap: 88px; 
+  margin-bottom: 40px;
   flex-wrap: wrap;
 }
 
@@ -224,7 +223,7 @@
   transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
   backdrop-filter: blur(2px);
-  min-width: 240px; /* botones más anchos para ocupar más horizontal */
+  min-width: 240px; /* para cambiar que los botones sean mas grandes a lo ancho */
 }
 
 .pet-size-btn:hover {
@@ -242,7 +241,7 @@
   display: flex;
   justify-content: center;
   margin-bottom: 18px;
-  margin-top: 96px; /* baja aún más el botón Avanzar */
+  margin-top: 96px;
 }
 
 .next-btn {
@@ -267,7 +266,7 @@
   margin-bottom: 24px;
 }
 
-/* Single upload container */
+/*subir imagen*/
 .upload-container {
   display: flex;
   justify-content: center;
@@ -442,7 +441,7 @@
 .progress-track {
   position: relative;
   height: 18px;
-  background: #d0d8e2; /* gris claro */
+  background: #d0d8e2; 
   border-radius: 9999px;
   overflow: hidden;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.12);
@@ -465,11 +464,11 @@
   top: 50%;
   transform: translateY(-50%);
   font-weight: 700;
-  color: #174b86; /* azul oscuro, legible sobre blanco */
+  color: #174b86; 
   font-size: 0.95rem;
 }
 
-/* Fullscreen frames - pantallas completas sin scroll */
+
 .fullscreen-frame {
   position: fixed;
   top: 0;
@@ -478,7 +477,7 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  padding: 24px 72px; /* Padding izquierdo igual a .veterinaria-app */
+  padding: 24px 72px; /* Padding izquierdo igual a veterinaria-app */
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -488,7 +487,7 @@
 }
 
 .fullscreen-frame .header {
-  margin-bottom: 0; /* Sin margen para que los títulos estén más arriba */
+  margin-bottom: 0; 
 }
 
 .fullscreen-main {
@@ -496,7 +495,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* Cambiar de center a flex-start */
+  justify-content: flex-start; /* Cambiar de center a flex-start (los alinea de arriba abajo */
   min-height: 0;
   overflow: hidden;
   padding-top: 40px; /* Espacio fijo desde arriba para el título */
@@ -508,11 +507,11 @@
   margin-bottom: 40px;
   font-weight: 700;
   letter-spacing: 2px;
-  margin-top: 0; /* Asegurar que no tenga margen superior */
-  flex-shrink: 0; /* No se encoge */
+  margin-top: 0; 
+  flex-shrink: 0; 
 }
 
-/* Loading frame */
+/*  frame de carga */
 .loading-frame {
   width: 100%;
   max-width: 600px;
@@ -572,7 +571,7 @@
   font-weight: 700;
 }
 
-/* Result frame */
+
 .result-frame {
   width: 100%;
   max-width: 700px;
@@ -674,7 +673,7 @@
   height: 20px;
   stroke: currentColor;
 }
-
+/*si no funca la conexion*/
 .error-message-fullscreen {
   margin-top: 30px;
   padding: 20px;
