@@ -3,6 +3,7 @@ import './MiComponente.css';
 import logo from './imagenes/logo.png';
 import nube from './imagenes/nube.png';
 import jsPDF from 'jspdf';
+import { API_ENDPOINTS } from './config.js';
 
 function MiComponente() {
   // Estado para splash screen
